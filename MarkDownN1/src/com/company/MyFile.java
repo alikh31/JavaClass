@@ -66,7 +66,7 @@ public class MyFile {
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
                 sb.append(line);
-                sb.append(System.lineSeparator());
+                sb.append(System.getProperty("line.separator"));
             }
 
             fileContent = sb.toString();
@@ -85,7 +85,7 @@ public class MyFile {
 
     public void append(String content){
 
-        fileContent = content + System.lineSeparator() + fileContent;
+        fileContent = content + System.getProperty("line.separator") + fileContent;
     }
 
     public void clear(){
@@ -119,7 +119,7 @@ public class MyFile {
                     continue;
                 }
 
-                tempFileOut += line + System.lineSeparator();
+                tempFileOut += line + System.getProperty("line.separator");
 
                 count ++;
             }
