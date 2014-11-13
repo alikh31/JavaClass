@@ -14,29 +14,33 @@ public class Main {
 	// write your code here
 
 
-        if (args.length < 2) {
+        MainWindow win = new MainWindow();
+        win.setLocation(50, 50);
+        win.setSize(600, 600);
+        win.setVisible(true);
 
-            showUsage();
-            return;
-        }
-
-        if (args[0].equalsIgnoreCase("-h")) {
-
-            showUsage();
-            return;
-        }
-
-        if (args[0].equalsIgnoreCase("-read") && args.length == 2) {
-
-            fileName = args[1];
-
-            parseEntry();
-
-            return;
-        }
-
-        showUsage();
-        return;
+//        if (args.length < 2) {
+//
+//            showUsage();
+//            return;
+//        }
+//
+//        if (args[0].equalsIgnoreCase("-h")) {
+//
+//            showUsage();
+//            return;
+//        }
+//
+//        if (args[0].equalsIgnoreCase("-read") && args.length == 2) {
+//
+//            fileName = args[1];
+//
+//            parseEntry();
+//
+//            return;
+//        }
+//
+//        showUsage();
 
     }
 

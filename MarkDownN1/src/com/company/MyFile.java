@@ -17,10 +17,11 @@ public class MyFile {
     public MyFile() {
 
         try {
+
             fileName = "test.txt";
             save();
-
         } catch (Exception e) {
+
             System.out.println("access denied!");
             e.printStackTrace();
         }
@@ -31,9 +32,8 @@ public class MyFile {
 
         try {
             fileName = path;
-            save();
-
         } catch (Exception e) {
+
             System.out.println("access denied!");
             e.printStackTrace();
         }
@@ -42,12 +42,12 @@ public class MyFile {
     public void save() {
 
         try {
+
             PrintWriter out = new PrintWriter(fileName);
             out.println(fileContent);
             out.close();
         }
         catch (Exception e) {
-
             System.out.println("Problem in writing the file!");
         }
     }
@@ -57,13 +57,16 @@ public class MyFile {
         BufferedReader reader = null;
 
         try {
+
             StringBuilder sb = new StringBuilder();
 
             File file = new File(fileName);
             reader = new BufferedReader(new FileReader(file));
 
             String line;
+
             while ((line = reader.readLine()) != null) {
+
                 System.out.println(line);
                 sb.append(line);
                 sb.append(System.getProperty("line.separator"));
@@ -190,6 +193,11 @@ public class MyFile {
             }
         }
         return wordCount;
+    }
+
+    public void setContent(String content) {
+
+        this.fileContent = content;
     }
 
     public int getCharCount(){
