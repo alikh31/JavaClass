@@ -20,27 +20,28 @@ import javax.swing.text.html.StyleSheet;
 
 public class MainWindow extends JFrame implements ActionListener, FocusListener{
 
-    private JPanel mainPanel;
-    private JPanel bottomPanel;
-    private JScrollPane scrollPane;
-    private JTable table;
-    private DefaultTableModel model;
-    private JButton saveButton;
-    private JButton clearButton;
-    private JTextField inputField;
+    public enum ConvertType {
+        Markdown, HTML , Latex, HTMLCode
+    }
+
     private JMenuItem openItem;
     private JMenuItem saveItem;
     private JMenuItem saveAsItem;
     private JMenuItem convertItem;
     private JMenuItem exitItem;
     private JMenuItem aboutItem;
+    private JMenuItem convertFromItem;
     private JEditorPane editorPane;
     private JSplitPane splitPane;
     private JEditorPane jEditorPane;
+    private ConvertType convertFromType;
+    private ConvertType convertToType;
 
     private MyFile file;
 
     public MainWindow() {
+
+        this.file= new MyFile();
 
         //Where the GUI is created:
         JMenuBar menuBar;
@@ -79,12 +80,79 @@ public class MainWindow extends JFrame implements ActionListener, FocusListener{
         exitItem.getAccessibleContext().setAccessibleDescription("Save File");
         menu.add(exitItem);
 
+        ////////////////////////////////////////////////////////////////////////////////////////
+        convertFromType = ConvertType.Markdown;
+        convertToType = ConvertType.HTML;
+
+
+        ButtonGroup group = new ButtonGroup();
+
+        menu = new JMenu("Convert From");
+        menu.setMnemonic(KeyEvent.VK_A);
+        menuBar.add(menu);
+
+        convertFromItem = new JRadioButtonMenuItem("from Markdown");
+        convertFromItem.getAccessibleContext().setAccessibleDescription("from Markdown");
+        convertFromItem.setSelected(true);
+        menu.add(convertFromItem);
+        group.add(convertFromItem);
+        this.convertFromItem.addActionListener(this);
+
+        convertFromItem = new JRadioButtonMenuItem("from Latex");
+        convertFromItem.getAccessibleContext().setAccessibleDescription("from Latex");
+        menu.add(convertFromItem);
+        group.add(convertFromItem);
+        this.convertFromItem.addActionListener(this);
+
+        convertFromItem = new JRadioButtonMenuItem("from HTML");
+        convertFromItem.getAccessibleContext().setAccessibleDescription("from HTML");
+        menu.add(convertFromItem);
+        group.add(convertFromItem);
+        this.convertFromItem.addActionListener(this);
+
+        ////////////////////////////////////////////////////////////////////////////////////////
+
+        group = new ButtonGroup();
+
+        menu = new JMenu("Convert to");
+        menu.setMnemonic(KeyEvent.VK_A);
+        menuBar.add(menu);
+
+        convertFromItem = new JRadioButtonMenuItem("to Markdown");
+        convertFromItem.getAccessibleContext().setAccessibleDescription("to Markdown");
+        menu.add(convertFromItem);
+        group.add(convertFromItem);
+        this.convertFromItem.addActionListener(this);
+
+        convertFromItem = new JRadioButtonMenuItem("to Latex");
+        convertFromItem.getAccessibleContext().setAccessibleDescription("to Latex");
+        menu.add(convertFromItem);
+        group.add(convertFromItem);
+        this.convertFromItem.addActionListener(this);
+
+        convertFromItem = new JRadioButtonMenuItem("to HTML(Code)");
+        convertFromItem.getAccessibleContext().setAccessibleDescription("to Latex");
+        menu.add(convertFromItem);
+        group.add(convertFromItem);
+        this.convertFromItem.addActionListener(this);
+
+        convertFromItem = new JRadioButtonMenuItem("to HTML");
+        convertFromItem.getAccessibleContext().setAccessibleDescription("to HTML");
+        menu.add(convertFromItem);
+        group.add(convertFromItem);
+        convertFromItem.setSelected(true);
+        this.convertFromItem.addActionListener(this);
+
+        ////////////////////////////////////////////////////////////////////////////////////////
+
         menu = new JMenu("Help");
         menuBar.add(menu);
 
         aboutItem = new JMenuItem("About...");
         aboutItem.getAccessibleContext().setAccessibleDescription("About");
         menu.add(aboutItem);
+
+
 
         this.openItem.addActionListener(this);
         this.saveItem.addActionListener(this);
@@ -101,19 +169,19 @@ public class MainWindow extends JFrame implements ActionListener, FocusListener{
             @Override
             public void removeUpdate(DocumentEvent e) {
 
-                ConvertMDtoHTMl();
+                updateConvert();
             }
 
             @Override
             public void insertUpdate(DocumentEvent e) {
 
-                ConvertMDtoHTMl();
+                updateConvert();
             }
 
             @Override
             public void changedUpdate(DocumentEvent arg0) {
 
-                ConvertMDtoHTMl();
+                updateConvert();
             }
         });
 
@@ -140,17 +208,9 @@ public class MainWindow extends JFrame implements ActionListener, FocusListener{
         // add some styles to the html
         StyleSheet styleSheet = kit.getStyleSheet();
         styleSheet = GithubStyle(styleSheet);
-//        styleSheet.addRule("body {color:#000; font-family:times; margin: 4px; }");
-//        styleSheet.addRule("h1 {color: blue;}");
-//        styleSheet.addRule("h2 {color: #ff0000;}");
-//        styleSheet.addRule("pre {font : 10px monaco; color : black; background-color : #fafafa; }");
 
-        // create a document, set it on the jeditorpane, then add the html
         Document doc = kit.createDefaultDocument();
         jEditorPane.setDocument(doc);
-        //jEditorPane.setText(htmlString);
-
-
 
         //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -170,9 +230,49 @@ public class MainWindow extends JFrame implements ActionListener, FocusListener{
         });
 
 
-        this.setTitle("md editor");
+        this.setTitle(file.getPath() + " - md editor");
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
+    }
+
+    public void updateConvert() {
+        file.setContent(editorPane.getText());
+        String from = "";
+        String to = "";
+
+        switch (convertFromType) {
+            case Markdown:
+                from = "markdown";
+                break;
+
+            case HTML:
+                from = "html";
+                break;
+
+            case Latex:
+                from = "latex";
+                break;
+        }
+
+        switch (convertToType) {
+            case Markdown:
+                to = "markdown";
+                break;
+
+            case HTML:
+                to = "html";
+                break;
+
+            case Latex:
+                to = "latex";
+                break;
+
+            case HTMLCode:
+                to = "html";
+                break;
+        }
+
+        Convert(from , to);
     }
 
     public void actionPerformed(ActionEvent e){
@@ -192,29 +292,41 @@ public class MainWindow extends JFrame implements ActionListener, FocusListener{
 
         if(command == "Open..."){
 
-
-            JFileChooser chooser = new JFileChooser();
-            FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                    "markdown file", "md", "txt");
-            chooser.setFileFilter(filter);
-            int returnVal = chooser.showOpenDialog(this);
-            if(returnVal == JFileChooser.APPROVE_OPTION) {
-
-                file = new MyFile(chooser.getSelectedFile().getPath());
-                file.read();
-                editorPane.setText(file.getContent());
-            }
-
-
-
+            OpenFile();
         } else if (command == "Save") {
 
-            JOptionPane.showMessageDialog(null, "Wrong format: at least 3 word");
+            Save();
+        } else if (command == "Save as...") {
 
+            SaveAs();
         } else if (command == "Convert") {
 
-            ConvertMDtoHTMl();
+            updateConvert();
+        } else if (command == "from Markdown") {
+
+            convertFromType = ConvertType.Markdown;
+        } else if (command == "from HTML") {
+
+            convertFromType = ConvertType.HTML;
+        } else if (command == "from Latex") {
+
+            convertFromType = ConvertType.Latex;
+        } else if (command == "to Markdown") {
+
+            convertToType = ConvertType.Markdown;
+        }else if (command == "to Latex") {
+
+            convertToType = ConvertType.Latex;
+        } else if (command == "to HTML") {
+
+            convertToType = ConvertType.HTML;
+        } else if (command == "to HTML(Code)") {
+
+            convertToType = ConvertType.HTMLCode;
         }
+
+
+        updateConvert();
 
     }
 
@@ -232,6 +344,20 @@ public class MainWindow extends JFrame implements ActionListener, FocusListener{
         tempFile.setContent(editorPane.getText());
         tempFile.save();
         jEditorPane.setText(executeCommand("pandoc -f markdown -t latex temp.md"));
+    }
+
+    private void Convert(String from, String to) {
+
+        MyFile tempFile = new MyFile("temp.md");
+        tempFile.setContent(editorPane.getText());
+        tempFile.save();
+        String out = executeCommand("pandoc -f " + from + " -t " + to + " temp.md");
+        if(convertToType != ConvertType.HTML) {
+            out = out.replaceAll("<", "&lt;");
+            out = out.replaceAll(">", "&gt;");
+            out = out.replaceAll("(\r\n|\n)", "\r\n<br />");
+        }
+        jEditorPane.setText(out);
     }
 
     private String executeCommand(String command) {
@@ -256,6 +382,43 @@ public class MainWindow extends JFrame implements ActionListener, FocusListener{
 
         return output.toString();
 
+    }
+
+    public void Save() {
+
+        file.save();
+    }
+
+    public void SaveAs() {
+
+        JFileChooser chooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "markdown file", "md", "txt");
+        chooser.setFileFilter(filter);
+        int returnVal = chooser.showSaveDialog(this);
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+
+            file.saveAs(chooser.getSelectedFile().getPath());
+        }
+
+        this.setTitle(file.getPath() + " - md editor");
+    }
+
+    public void OpenFile() {
+
+        JFileChooser chooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "markdown file", "md", "txt");
+        chooser.setFileFilter(filter);
+        int returnVal = chooser.showOpenDialog(this);
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+
+            file = new MyFile(chooser.getSelectedFile().getPath());
+            file.read();
+            editorPane.setText(file.getContent());
+        }
+
+        this.setTitle(file.getPath() + " - md editor");
     }
 
     public static StyleSheet GithubStyle(StyleSheet from) {

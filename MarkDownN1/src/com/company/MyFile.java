@@ -52,6 +52,12 @@ public class MyFile {
         }
     }
 
+    public void saveAs(String path) {
+
+        this.fileName = path;
+        save();
+    }
+
     public void read(){
 
         BufferedReader reader = null;
@@ -97,7 +103,19 @@ public class MyFile {
     }
 
     public String getContent() {
+
         return fileContent;
+
+    }
+
+    public void setString(String content) {
+
+        this.fileContent = content;
+    }
+
+    public String getPath() {
+
+        return this.fileName;
     }
 
     public void deleteLine(int lineNo){
